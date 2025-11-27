@@ -27,7 +27,7 @@ services:
       - elk
 
   api:
-    build: ./api
+    build: ./API
     ports:
       - "8000:8000"
     depends_on:
