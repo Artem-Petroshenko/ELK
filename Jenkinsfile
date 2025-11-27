@@ -1,6 +1,10 @@
 pipeline {
     agent {label 'l1'}
 
+    environment {
+        PYTHONNOUSERSITE = "1"
+    }
+
     stages {
 
         stage('Checkout') {
