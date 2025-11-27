@@ -15,8 +15,10 @@ pipeline {
 
         stage('Build Docker images') {
             steps {
-                docker-compose down -v || true
-                docker-compose up -d
+                sh """
+                    docker-compose down -v || true
+                    docker-compose up -d
+                """
             }
         }
 
