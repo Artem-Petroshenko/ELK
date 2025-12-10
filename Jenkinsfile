@@ -85,8 +85,8 @@ EOF
                                 echo "==> SSH is UP!"
                                 exit 0
                             fi
-                            echo "==> SSH not ready, sleep 10s"
-                            sleep 10
+                            echo "==> SSH not ready, sleep 30s"
+                            sleep 30
                         done
                         echo "ERROR: SSH did not start in time"
                         exit 1
