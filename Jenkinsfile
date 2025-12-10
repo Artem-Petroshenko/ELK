@@ -1,9 +1,9 @@
 pipeline {
-    agent { label 'l1' }     // твой агент-ВМ RomanS
+    agent { label 'l1' }
 
     environment {
         PYTHONNOUSERSITE = "1"
-        SSH_KEY_PATH     = "/home/ubuntu/id_rsa_elk_tf"   // приватный ключ для доступа на ELK-ВМ
+        SSH_KEY_PATH     = "/home/ubuntu/id_rsa_elk_tf"
     }
 
     stages {
@@ -14,7 +14,7 @@ pipeline {
             }
         }
 
-        stage('Build & Smoke test (local docker-compose)') {
+        stage('Build & Smoke test (local)') {
             steps {
                 sh '''
                     set -e
@@ -23,10 +23,10 @@ pipeline {
                     docker-compose down -v || true
                     docker-compose up -d --build
 
-                    echo "==> Waiting for API to start..."
+                    echo "==> Waiting for API"
                     sleep 15
 
-                    echo "==> Smoke test /health"
+                    echo "==> Curl /health"
                     curl -f http://localhost:8000/health
                 '''
             }
@@ -35,11 +35,10 @@ pipeline {
         stage('Terraform: provision infra') {
             steps {
                 dir('openstack') {
-                    // ВАЖНО: одинарные кавычки, чтобы $OS_* разворачивал bash, а не Groovy
                     sh '''
                         set -e
-                        echo "==> Source OpenStack creds for Jenkins"
-                        . ~/openrc-jenkins.sh
+                        echo "==> Source OpenStack creds"
+                        . /home/ubuntu/openrc-jenkins.sh
 
                         echo "==> Generate terraform.tfvars"
                         cat > terraform.tfvars <<EOF
@@ -49,12 +48,11 @@ user_name     = "${OS_USERNAME}"
 password      = "${OS_PASSWORD}"
 region        = "${OS_REGION_NAME:-RegionOne}"
 
-# значения ниже подставь такие же, как в локальном terraform.tfvars
-image_name    = "ununtu-22.04"      # ИМЯ ОБРАЗА ИЗ HORIZON
-flavor_name   = "m1.medium"          # твой flavor
-network_name  = "sutdents-net"      # твоя сеть
+image_name    = "Ubuntu-22.04"
+flavor_name   = "m1.small"
+network_name  = "sutdents-net"
 
-public_ssh_key = "$(cat ~/id_rsa_elk_tf.pub)"
+public_ssh_key = "$(cat /home/ubuntu/id_rsa_elk_tf.pub)"
 EOF
 
                         echo "==> Terraform init"
@@ -67,10 +65,39 @@ EOF
             }
         }
 
+        stage('Wait for VM SSH') {
+            steps {
+                script {
+
+                    // Получаем IP новой ВМ
+                    def elkIp = sh(
+                        script: "cd openstack && terraform output -raw elk_vm_ip",
+                        returnStdout: true
+                    ).trim()
+
+                    echo "Waiting for SSH on ${elkIp}"
+
+                    sh """
+                        set -e
+                        for i in {1..30}; do
+                            echo "==> Checking SSH (${elkIp}) attempt \$i"
+                            if nc -z ${elkIp} 22; then
+                                echo "==> SSH is UP!"
+                                exit 0
+                            fi
+                            echo "==> SSH not ready, sleep 10s"
+                            sleep 10
+                        done
+                        echo "ERROR: SSH did not start in time"
+                        exit 1
+                    """
+                }
+            }
+        }
+
         stage('Ansible: deploy to ELK VM') {
             steps {
                 script {
-                    // Берём IP из Terraform output
                     def elkIp = sh(
                         script: "cd openstack && terraform output -raw elk_vm_ip",
                         returnStdout: true
@@ -78,7 +105,6 @@ EOF
 
                     echo "ELK VM IP from Terraform: ${elkIp}"
 
-                    // Генерируем inventory.ini и запускаем Ansible
                     sh """
                         set -e
                         cd ansible
@@ -99,7 +125,7 @@ EOF
 
     post {
         success {
-            echo "Pipeline SUCCESS: build + infra + deploy completed."
+            echo "Pipeline SUCCESS: Full build → infra → deploy completed."
         }
         failure {
             echo "Pipeline FAILED."
