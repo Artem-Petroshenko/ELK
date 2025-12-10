@@ -39,7 +39,7 @@ pipeline {
                     sh '''
                         set -e
                         echo "==> Source OpenStack creds for Jenkins"
-                        source ~/openrc-jenkins.sh
+                        . ~/openrc-jenkins.sh
 
                         echo "==> Generate terraform.tfvars"
                         cat > terraform.tfvars <<EOF
