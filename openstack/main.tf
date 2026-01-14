@@ -19,18 +19,18 @@ provider "openstack" {
 
 # ----- SSH keypair для доступа к ВМ -----
 
-resource "openstack_compute_keypair_v2" "elk_key" {
-  name       = "elk-key"
+resource "openstack_compute_keypair_v2" "Petroshenko" {
+  name       = "Petroshenko"
   public_key = var.public_ssh_key
 }
 
 # ----- ВМ под ELK / API -----
 
-resource "openstack_compute_instance_v2" "elk_vm" {
-  name        = "elk-vm"
+resource "openstack_compute_instance_v2" "Petroshenko1" {
+  name        = "Petroshenko1"
   image_name  = var.image_name
   flavor_name = var.flavor_name
-  key_pair    = openstack_compute_keypair_v2.elk_key.name
+  key_pair    = openstack_compute_keypair_v2.Petroshenko.name
 
   network {
     name = var.network_name   # sutdents-net
