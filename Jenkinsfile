@@ -56,7 +56,7 @@ image_name    = "ununtu-22.04"        # здесь должно быть точ�
 flavor_name   = "m1.medium"
 network_name  = "sutdents-net"
 
-public_ssh_key = "$(cat /home/ubuntu/id_rsa_elk_tf.pub)"
+public_ssh_key = "$(cat /home/ubuntu/.ssh/id_rsa)"
 EOF
 
                         echo "==> Terraform init"
