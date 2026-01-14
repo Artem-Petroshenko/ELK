@@ -41,8 +41,8 @@ pipeline {
                         echo "==> Source OpenStack creds"
                         . /home/ubuntu/openrc-jenkins.sh
 
-                        echo "==> Ensure keypair elk-key does not exist"
-                        openstack keypair delete elk-key || true
+                        echo "==> Ensure keypair Petroshenko does not exist"
+                        openstack keypair delete Petroshenko || true
 
                         echo "==> Generate terraform.tfvars"
                         cat > terraform.tfvars <<EOF
@@ -56,7 +56,7 @@ image_name    = "ununtu-22.04"        # здесь должно быть точ�
 flavor_name   = "m1.medium"
 network_name  = "sutdents-net"
 
-public_ssh_key = "$(cat /home/ubuntu/.ssh/id_rsa)"
+public_ssh_key = "$(cat /home/ubuntu/.ssh/id_rsa.pub)"
 EOF
 
                         echo "==> Terraform init"
