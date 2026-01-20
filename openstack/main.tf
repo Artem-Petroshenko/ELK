@@ -26,8 +26,8 @@ resource "openstack_compute_keypair_v2" "Petroshenko" {
 
 # ----- ВМ под ELK / API -----
 
-resource "openstack_compute_instance_v2" "Petroshenko1" {
-  name        = "Petroshenko1"
+resource "openstack_compute_instance_v2" "Petroshenko2" {
+  name        = "Petroshenko2"
   image_name  = var.image_name
   flavor_name = var.flavor_name
   key_pair    = openstack_compute_keypair_v2.Petroshenko.name
