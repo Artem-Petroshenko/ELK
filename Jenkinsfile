@@ -101,7 +101,7 @@ EOF
             steps {
                 script {
                     def elkIp = sh(
-                        script: "cd openstack && terraform output -raw elk_vm_ip",
+                        script: "cd openstack && terraform output -raw Petroshenko-terraform_ip",
                         returnStdout: true
                     ).trim()
 
